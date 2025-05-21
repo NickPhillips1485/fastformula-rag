@@ -91,6 +91,7 @@ def looks_like_code(text: str) -> bool:
 @app.route("/", methods=["GET", "POST"])
 def index():
     answer_html, sources = "", []
+    query = ""  # Initialise the query variable
 
     if request.method == "POST":
         query = request.form.get("question", "").strip()
@@ -105,7 +106,7 @@ def index():
             else:
                 answer_html = markdown(raw)
 
-    return render_template("index.html", answer=answer_html, sources=sources)
+    return render_template("index.html", result=answer_html, query=query, sources=sources)
 
 if __name__ == "__main__":
     app.run(debug=True)

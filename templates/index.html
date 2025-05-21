@@ -5,85 +5,85 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 2em;
-        }
-
-        h1 {
-            font-size: 2em;
-            margin-bottom: 0.5em;
-        }
-
-        form {
-            margin-bottom: 1.5em;
-        }
-
-        input[type="text"] {
-            width: 400px;
-            padding: 0.5em;
-            font-size: 1em;
-        }
-
-        input[type="submit"] {
-            padding: 0.5em 1em;
-            font-size: 1em;
-            margin-left: 0.5em;
-        }
-
-        .answer-section {
-            margin-top: 2em;
-        }
-
-        .answer-section h2 {
-            margin-bottom: 0.5em;
-        }
-
-        .answer-content {
+            margin: 40px;
             background-color: #f5f5f5;
-            padding: 1em;
-            white-space: pre-wrap;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            font-size: 16px;
+            padding: 10px;
+            resize: vertical;
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
-
-        pre {
-            background-color: #272822;
-            color: #f8f8f2;
-            padding: 1em;
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        .response-block {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
             overflow-x: auto;
+            overflow-y: auto;
+            max-height: 800px;
         }
-
-        ul {
-            margin-top: 0.5em;
+        .response-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 800px;
         }
     </style>
 </head>
 <body>
-    <h1>Fast Formula Assistant</h1>
-
-    <form method="POST">
-        <label for="question">Ask a question:</label><br>
-        <input type="text" name="question" id="question" required>
-        <input type="submit" value="Submit">
+    <h1>💬 Fast Formula Assistant</h1>
+    <form method="post">
+        <label for="question"><strong>Your question:</strong></label><br>
+        <textarea name="question" placeholder="Ask a question..." required></textarea><br>
+        <button type="submit">Submit (Ctrl + Enter)</button>
     </form>
 
-    {% if answer %}
-        <div class="answer-section">
-            <h2>Answer:</h2>
-            {% if answer.startswith('<pre>') %}
-                {{ answer | safe }}
-            {% else %}
-                <div class="answer-content">{{ answer | safe }}</div>
-            {% endif %}
-
-            {% if sources %}
-                <h2>Sources:</h2>
-                <ul>
-                    {% for source in sources %}
-                        <li>{{ source }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
+    {% if query %}
+        <h2>🔍 You asked:</h2>
+        <div class="response-block">{{ query }}</div>
     {% endif %}
+
+    {% if result %}
+        <h2>💡 Answer:</h2>
+        <div class="response-block">{{ result|safe }}</div>
+    {% endif %}
+
+    <script>
+        document.querySelector("textarea").addEventListener("keydown", function (e) {
+            if (e.ctrlKey && e.key === "Enter") {
+                e.preventDefault();
+                this.form.submit();
+            }
+        });
+    </script>
 </body>
 </html>
 
