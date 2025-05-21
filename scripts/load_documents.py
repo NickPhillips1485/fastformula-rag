@@ -1,50 +1,48 @@
 from pathlib import Path
+from typing import List
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.docstore.document import Document
+
 from langchain_community.document_loaders import (
     PyPDFLoader,
-    TextLoader
+    TextLoader,
+    UnstructuredWordDocumentLoader,
+    Docx2txtLoader,               # ← correct import
 )
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
-import docx2txt
 
-def load_docx_with_docx2txt(path):
-    text = docx2txt.process(path)
-    return [Document(page_content=text, metadata={"source": str(path)})]
 
-def load_and_split_all_documents(data_path="data"):
-    all_chunks = []
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=100
-    )
+def _make_loader(path: Path):
+    suf = path.suffix.lower()
+    if suf == ".pdf":
+        return PyPDFLoader(str(path))
+    if suf in {".txt", ".md", ".sql"}:
+        return TextLoader(str(path), encoding="utf-8")
+    if suf == ".docx":
+        return Docx2txtLoader(str(path))
+    return None
 
-    for file_path in Path(data_path).rglob("*"):
-        print(f"Found file: {file_path.name}")
 
-        # Skip very large PDFs for now
-        if file_path.name == "administering-fast-formulas.pdf":
-            print("Skipping large PDF for now (known crash).")
+def load_and_split_all_documents(data_path: str = "data") -> List[Document]:
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    chunks: List[Document] = []
+
+    for fp in Path(data_path).rglob("*"):
+        if fp.is_dir():
+            continue
+        loader = _make_loader(fp)
+        if not loader:
             continue
 
-        # Load supported file types
-        try:
-            if file_path.suffix.lower() == ".pdf":
-                loader = PyPDFLoader(str(file_path))
-                documents = loader.load()
-            elif file_path.suffix.lower() in [".txt", ".md", ".sql"]:
-                loader = TextLoader(str(file_path), encoding="utf-8")
-                documents = loader.load()
-            elif file_path.suffix.lower() == ".docx":
-                documents = load_docx_with_docx2txt(str(file_path))
-            else:
-                print(f"Skipping unsupported file: {file_path}")
-                continue
+        docs = loader.load()
 
-            chunks = splitter.split_documents(documents)
-            all_chunks.extend(chunks)
-            print(f"{file_path.name} → {len(chunks)} chunks")
+        # Ensure every doc has source metadata + filename in text
+        for d in docs:
+            d.metadata["source"] = str(fp.relative_to(data_path))
+            d.page_content = f"[FILE: {fp.stem}]\n{d.page_content}"
 
-        except Exception as e:
-            print(f"Failed to load {file_path.name}: {e}")
+        chunks.extend(splitter.split_documents(docs))
 
-    return all_chunks
+    print(f"✅ Loaded & chunked {len(chunks)} chunks")
+    return chunks
+
