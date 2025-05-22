@@ -25,7 +25,6 @@ db = FAISS.load_local(
 )
 
 # ── HYBRID RETRIEVER (Vector + BM25) ────────────────────────────────
-# Build BM25 with texts **and matching metadata** (so 'source' is present)
 texts = []
 metadatas = []
 for doc in db.docstore._dict.values():
@@ -39,7 +38,7 @@ retriever: EnsembleRetriever = EnsembleRetriever(
     weights=[0.6, 0.4],
 )
 
-# ── LLM  ─────────────────────────────────────────────────────────────
+# ── LLM ──────────────────────────────────────────────────────────────
 llm = ChatOpenAI(
     model_name=os.getenv("OPENAI_MODEL", "gpt-4o"),
     temperature=0.2,
@@ -91,7 +90,7 @@ def looks_like_code(text: str) -> bool:
 @app.route("/", methods=["GET", "POST"])
 def index():
     answer_html, sources = "", []
-    query = ""  # Initialise the query variable
+    query = ""
 
     if request.method == "POST":
         query = request.form.get("question", "").strip()
@@ -110,3 +109,5 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+

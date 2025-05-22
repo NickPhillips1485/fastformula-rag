@@ -16,12 +16,13 @@
         }
         textarea {
             width: 100%;
-            height: 120px;
+            height: 140px;
             font-size: 16px;
             padding: 10px;
             resize: vertical;
             border: 1px solid #ccc;
             border-radius: 5px;
+            box-sizing: border-box;
         }
         button {
             padding: 10px 20px;
@@ -41,20 +42,18 @@
             padding: 20px;
             border-radius: 5px;
             border: 1px solid #ddd;
+            white-space: pre-wrap;
             font-family: Consolas, monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
             overflow-x: auto;
-            overflow-y: auto;
-            max-height: 800px;
         }
-        .response-block pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-x: auto;
-            overflow-y: auto;
-            max-height: 800px;
+        .error-message {
+            background-color: #fff3f3;
+            color: #d00;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c2c2;
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
@@ -74,6 +73,12 @@
     {% if result %}
         <h2>💡 Answer:</h2>
         <div class="response-block">{{ result|safe }}</div>
+    {% endif %}
+
+    {% if error %}
+        <div class="error-message">
+            ⚠️ {{ error }}
+        </div>
     {% endif %}
 
     <script>
